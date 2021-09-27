@@ -39,6 +39,9 @@ export async function prepareRom(world_patch, settings, baseIps, game) {
     if (settings.smSpinjumps) {
         smSpinjumps(rom, mapping);
     }
+    if (settings.smInfiniteSpaceJump) {
+        smInfiniteSpaceJump(rom, mapping);
+    }
 
     if (game.z3) {
         z3HeartColor(rom, mapping, settings.z3HeartColor);
@@ -98,6 +101,12 @@ function formatAuthor(author) {
 /* Enables separate spinjump behavior */
 function smSpinjumps(rom, mapping) {
     rom[snes_to_pc(mapping, 0x9B93FE)] = 0x01;
+}
+
+/* Enables infinite space jump behavior */
+function smInfiniteSpaceJump(rom, mapping) {
+    rom[snes_to_pc(mapping, 0x90A493)] = 0x80;
+    rom[snes_to_pc(mapping, 0x90A494)] = 0x0D;
 }
 
 function z3HeartColor(rom, mapping, setting) {

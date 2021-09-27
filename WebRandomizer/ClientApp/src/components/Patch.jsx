@@ -65,6 +65,7 @@ export default function Patch(props) {
     const [z3Sprite, setZ3Sprite] = useState({});
     const [smSprite, setSMSprite] = useState({});
     const [smSpinjumps, setSMSpinjumps] = useState(false);
+    const [smInfiniteSpaceJump, setSMInfiniteSpaceJump] = useState(false);
     const [z3HeartColor, setZ3HeartColor] = useState('red');
     const [z3HeartBeep, setZ3HeartBeep] = useState('half');
     const [smEnergyBeep, setSMEnergyBeep] = useState(true);
@@ -92,10 +93,11 @@ export default function Patch(props) {
         let settings;
         if ((settings = restore())) {
             const { z3: z3Sprite, sm: smSprite, spinjumps } = settings.sprites || {};
-            const { z3_heart_color, z3_heart_beep, sm_energy_beep } = settings;
+            const { z3_heart_color, z3_heart_beep, sm_energy_beep, sm_infinite_space_jump } = settings;
             setZ3Sprite(sprites.z3.find(x => x.title === z3Sprite) || {});
             setSMSprite(sprites.sm.find(x => x.title === smSprite) || {});
             setSMSpinjumps(defaultTo(spinjumps, false));
+            setSMInfiniteSpaceJump(defaultTo(sm_infinite_space_jump, false));
             setZ3HeartColor(defaultTo(z3_heart_color, 'red'));
             setZ3HeartBeep(defaultTo(z3_heart_beep, 'half'));
             setSMEnergyBeep(defaultTo(sm_energy_beep, true));
@@ -105,7 +107,7 @@ export default function Patch(props) {
     async function onDownloadRom() {
         try {
             if (world !== null) {
-                const settings = { z3Sprite, smSprite, smSpinjumps, z3HeartColor, z3HeartBeep, smEnergyBeep };
+                const settings = { z3Sprite, smSprite, smSpinjumps, smInfiniteSpaceJump, z3HeartColor, z3HeartBeep, smEnergyBeep };
                 const patchedData = await prepareRom(world.patch, settings, baseIps[game.id], game);
                 saveAs(new Blob([patchedData]), constructFileName());
             }
@@ -163,6 +165,10 @@ export default function Patch(props) {
     const onSpinjumpToggle = () => {
         setSMSpinjumps(!smSpinjumps);
         persist(set(restore() || {}, 'sprites.spinjumps', !smSpinjumps));
+    };
+    const onSMInfiniteSpaceJumpToggle = () => {
+        setSMInfiniteSpaceJump(!smInfiniteSpaceJump);
+        persist(set(restore() || {}, 'sm_infinite_space_jump', !smInfiniteSpaceJump));
     };
     const onZ3HeartColorChange = (value) => {
         setZ3HeartColor(value);
@@ -223,10 +229,17 @@ export default function Patch(props) {
                 </Row>
             )}
             <Row className="mb-3">
-                <Col md="4">
+                <Col md="3">
                     <InputGroup prefixClassName="mr-1" prefix="Energy Beep">
-                        <BootstrapSwitchButton width="80" onlabel="On" offlabel="Off" checked={smEnergyBeep}
+                        <BootstrapSwitchButton width="40" onlabel="On" offlabel="Off" checked={smEnergyBeep}
                             onChange={onSMEnergyBeepToggle}
+                        />
+                    </InputGroup>
+                </Col>
+                <Col md="4">
+                    <InputGroup prefixClassName="mr-1" prefix="Infinite Space Jump">
+                        <BootstrapSwitchButton width="40" onlabel="On" offlabel="Off" checked={smInfiniteSpaceJump}
+                            onChange={onSMInfiniteSpaceJumpToggle}
                         />
                     </InputGroup>
                 </Col>
