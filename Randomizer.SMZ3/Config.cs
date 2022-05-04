@@ -22,6 +22,8 @@ namespace Randomizer.SMZ3 {
 
     [DefaultValue(Normal)]
     enum SMLogic {
+        [Description("Easy")]
+        Easy,
         [Description("Normal")]
         Normal,
         [Description("Hard")]

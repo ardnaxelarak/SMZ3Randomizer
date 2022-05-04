@@ -19,20 +19,20 @@ namespace Randomizer.SMZ3.Regions.SuperMetroid.Brinstar {
                     _ => new Requirement(items => items.CanPassBombPassages() && items.CanOpenRedDoors())
                 }),
                 new Location(this, 16, 0x8F851E, LocationType.Visible, "Super Missile (green Brinstar top)", Logic switch {
-                    Normal => items => items.CanOpenRedDoors() && items.SpeedBooster,
-                    _ => new Requirement(items => items.CanOpenRedDoors() && (items.Morph || items.SpeedBooster))
+                    Hard => new Requirement(items => items.CanOpenRedDoors() && (items.Morph || items.SpeedBooster)),
+                    _ => items => items.CanOpenRedDoors() && items.SpeedBooster
                 }),
                 new Location(this, 17, 0x8F852C, LocationType.Chozo, "Reserve Tank, Brinstar", Logic switch {
-                    Normal => items => items.CanOpenRedDoors() && items.SpeedBooster,
-                    _ => new Requirement(items => items.CanOpenRedDoors() && (items.Morph || items.SpeedBooster))
+                    Hard => new Requirement(items => items.CanOpenRedDoors() && (items.Morph || items.SpeedBooster)),
+                    _ => items => items.CanOpenRedDoors() && items.SpeedBooster
                 }),
                 new Location(this, 18, 0x8F8532, LocationType.Hidden, "Missile (green Brinstar behind missile)", Logic switch {
-                    Normal => items => items.SpeedBooster && items.CanPassBombPassages() && items.CanOpenRedDoors(),
-                    _ => new Requirement(items => (items.CanPassBombPassages() || items.Morph && items.ScrewAttack) && items.CanOpenRedDoors())
+                    Hard => new Requirement(items => (items.CanPassBombPassages() || items.Morph && items.ScrewAttack) && items.CanOpenRedDoors()),
+                    _ => items => items.SpeedBooster && items.CanPassBombPassages() && items.CanOpenRedDoors()
                 }),
                 new Location(this, 19, 0x8F8538, LocationType.Visible, "Missile (green Brinstar behind reserve tank)", Logic switch {
-                    Normal => items => items.SpeedBooster && items.CanOpenRedDoors() && items.Morph,
-                    _ => new Requirement(items => items.CanOpenRedDoors() && items.Morph)
+                    Hard => new Requirement(items => items.CanOpenRedDoors() && items.Morph),
+                    _ => items => items.SpeedBooster && items.CanOpenRedDoors() && items.Morph
                 }),
                 new Location(this, 30, 0x8F87C2, LocationType.Visible, "Energy Tank, Etecoons", Logic switch {
                     _ => new Requirement(items => items.CardBrinstarL2 && items.CanUsePowerBombs())

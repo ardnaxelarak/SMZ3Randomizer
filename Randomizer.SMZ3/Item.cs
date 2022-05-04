@@ -82,8 +82,8 @@ namespace Randomizer.SMZ3 {
         [Description("Turtle Rock Big Key")]
         BigKeyTR = 0x93,
         [Description("Ganons Tower Big Key")]
-        BigKeyGT = 0x92,       
-        
+        BigKeyGT = 0x92,
+
         [Description("Sewer Key")]
         KeyHC = 0xA0,
         [Description("Castle Tower Key")]
@@ -328,6 +328,16 @@ namespace Randomizer.SMZ3 {
         static readonly Regex compass = new("^Compass");
         static readonly Regex keycard = new("^Card");
 
+        private static readonly List<ItemType> BottleTypes = new List<ItemType> {
+            Bottle,
+            BottleWithRedPotion,
+            BottleWithGreenPotion,
+            BottleWithBluePotion,
+            BottleWithFairy,
+            BottleWithBee,
+            BottleWithGoldBee,
+        };
+
         public bool IsDungeonItem => dungeon.IsMatch(Type.ToString());
         public bool IsBigKey => bigKey.IsMatch(Type.ToString());
         public bool IsKey => key.IsMatch(Type.ToString());
@@ -347,11 +357,15 @@ namespace Randomizer.SMZ3 {
             World = world;
         }
 
+        public static ItemType RandomBottle(Random random) {
+            return BottleTypes[random.Next(BottleTypes.Count)];
+        }
+
         public static Item Nothing(World world) {
             return new Item(ItemType.Nothing, world);
         }
 
-        public static List<Item> CreateProgressionPool(World world) {
+        public static List<Item> CreateProgressionPool(World world, Random rnd) {
             var itemPool = new List<Item> {
                 new Item(ProgressiveShield),
                 new Item(ProgressiveShield),
@@ -373,7 +387,7 @@ namespace Randomizer.SMZ3 {
                 new Item(Flute),
                 new Item(Bugnet),
                 new Item(Book),
-                new Item(Bottle),
+                new Item(RandomBottle(rnd)),
                 new Item(Somaria),
                 new Item(Byrna),
                 new Item(Cape),
@@ -424,7 +438,7 @@ namespace Randomizer.SMZ3 {
             return itemPool;
         }
 
-        public static List<Item> CreateNicePool(World world) {
+        public static List<Item> CreateNicePool(World world, Random rnd) {
             var itemPool = new List<Item> {
                 new Item(ProgressiveTunic),
                 new Item(ProgressiveTunic),
@@ -433,9 +447,9 @@ namespace Randomizer.SMZ3 {
                 new Item(SilverArrows),
                 new Item(BlueBoomerang),
                 new Item(RedBoomerang),
-                new Item(Bottle),
-                new Item(Bottle),
-                new Item(Bottle),
+                new Item(RandomBottle(rnd)),
+                new Item(RandomBottle(rnd)),
+                new Item(RandomBottle(rnd)),
                 new Item(HeartContainerRefill),
 
                 new Item(Spazer),
@@ -733,6 +747,12 @@ namespace Randomizer.SMZ3 {
                     ItemType.Flute => Flute = true,
                     ItemType.Book => Book = true,
                     ItemType.Bottle => Bottle = true,
+                    ItemType.BottleWithRedPotion => Bottle = true,
+                    ItemType.BottleWithGreenPotion => Bottle = true,
+                    ItemType.BottleWithBluePotion => Bottle = true,
+                    ItemType.BottleWithFairy => Bottle = true,
+                    ItemType.BottleWithBee => Bottle = true,
+                    ItemType.BottleWithGoldBee => Bottle = true,
                     ItemType.Somaria => Somaria = true,
                     ItemType.Byrna => Byrna = true,
                     ItemType.Cape => Cape = true,
@@ -819,34 +839,37 @@ namespace Randomizer.SMZ3 {
 
         public static bool CanAccessDarkWorldPortal(this Progression items, Config config) {
             return config.SMLogic switch {
-                Normal =>
-                    items.CardMaridiaL1 && items.CardMaridiaL2 && items.CanUsePowerBombs() && items.Super && items.Gravity && items.SpeedBooster,
-                _ =>
+                Hard =>
                     items.CardMaridiaL1 && items.CardMaridiaL2 && items.CanUsePowerBombs() && items.Super &&
                     (items.Charge || items.Super && items.Missile) &&
                     (items.Gravity || items.HiJump && items.Ice && items.Grapple) &&
-                    (items.Ice || items.Gravity && items.SpeedBooster)
+                    (items.Ice || items.Gravity && items.SpeedBooster),
+                _ =>
+                    items.CardMaridiaL1 && items.CardMaridiaL2 && items.CanUsePowerBombs() && items.Super && items.Gravity && items.SpeedBooster,
             };
         }
 
         public static bool CanAccessMiseryMirePortal(this Progression items, Config config) {
             return config.SMLogic switch {
-                Normal =>
+                Hard =>
+                    (items.CardNorfairL2 || items.SpeedBooster) && items.Varia && items.Super && (
+                        items.CanFly(config) || items.HiJump || items.SpeedBooster || items.CanSpringBallJump() || items.Ice
+                    ) && (items.Gravity || items.HiJump) && items.CanUsePowerBombs(),
+                _ =>
                     (items.CardNorfairL2 || items.SpeedBooster && items.Wave) && items.Varia && items.Super &&
                         items.Gravity && items.SpaceJump && items.CanUsePowerBombs(),
-                _ =>
-                    (items.CardNorfairL2 || items.SpeedBooster) && items.Varia && items.Super && (
-                        items.CanFly() || items.HiJump || items.SpeedBooster || items.CanSpringBallJump() || items.Ice
-                    ) && (items.Gravity || items.HiJump) && items.CanUsePowerBombs()
-             };
+            };
         }
 
-        public static bool CanIbj(this Progression items) {
-            return items.Morph && items.Bombs;
+        public static bool CanIbj(this Progression items, Config config) {
+            return config.SMLogic switch {
+                Easy => false,
+                _ => items.Morph && items.Bombs,
+            };
         }
 
-        public static bool CanFly(this Progression items) {
-            return items.SpaceJump || items.CanIbj();
+        public static bool CanFly(this Progression items, Config config) {
+            return items.SpaceJump || items.CanIbj(config);
         }
 
         public static bool CanUsePowerBombs(this Progression items) {
@@ -887,13 +910,13 @@ namespace Randomizer.SMZ3 {
 
         public static bool CanAccessMaridiaPortal(this Progression items, World world) {
             return world.Config.SMLogic switch {
-                Normal =>
+                Hard =>
                     items.MoonPearl && items.Flippers &&
-                    items.Gravity && items.Morph &&
+                    (items.CanSpringBallJump() || items.HiJump || items.Gravity) && items.Morph &&
                     (world.CanAquire(items, Agahnim) || items.Hammer && items.CanLiftLight() || items.CanLiftHeavy()),
                 _ =>
                     items.MoonPearl && items.Flippers &&
-                    (items.CanSpringBallJump() || items.HiJump || items.Gravity) && items.Morph &&
+                    items.Gravity && items.Morph &&
                     (world.CanAquire(items, Agahnim) || items.Hammer && items.CanLiftLight() || items.CanLiftHeavy())
             };
         }

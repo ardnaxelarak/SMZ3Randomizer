@@ -31,7 +31,7 @@ namespace Randomizer.SMZ3 {
             foreach (var world in Worlds) {
                 /* The dungeon pool order is significant, don't shuffle */
                 var dungeon = Item.CreateDungeonPool(world);
-                var progression = Item.CreateProgressionPool(world);
+                var progression = Item.CreateProgressionPool(world, Rnd);
 
                 InitialFillInOwnWorld(dungeon, progression, world);
 
@@ -49,7 +49,7 @@ namespace Randomizer.SMZ3 {
             }
 
             progressionItems = progressionItems.Shuffle(Rnd);
-            var niceItems = Worlds.SelectMany(world => Item.CreateNicePool(world)).Shuffle(Rnd);
+            var niceItems = Worlds.SelectMany(world => Item.CreateNicePool(world, Rnd)).Shuffle(Rnd);
             var junkItems = Worlds.SelectMany(world => Item.CreateJunkPool(world)).Shuffle(Rnd);
 
             var locations = Worlds.SelectMany(x => x.Locations).Empty().Shuffle(Rnd);

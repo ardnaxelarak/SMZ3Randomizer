@@ -35,11 +35,11 @@ namespace WebGameService
                 options.AddPolicy(name: MultiworldOrigins,
                 builder =>
                 {
-                    builder.WithOrigins("https://localhost:5001", "https://*.samus.link")
+                    builder.WithOrigins("https://localhost:5001", "https://localhost:5011", "https://*.gwaa.kiwi")
                         .AllowAnyHeader()
                         .WithMethods("GET", "POST")
                         .AllowCredentials();
-                           
+
                 });
             });
 

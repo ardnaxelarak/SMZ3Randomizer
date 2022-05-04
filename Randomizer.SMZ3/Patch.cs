@@ -404,6 +404,10 @@ namespace Randomizer.SMZ3 {
             const int nrPacks = 7;
             const byte probability = 1;
             patches.Add((Snes(0x6FA62), Repeat(probability, nrPacks).ToArray()));
+
+            /* fairy refill prizes */
+            patches.Add((Snes(0x6C8FF), new[] { (byte) Item.RandomBottle(rnd) }));
+            patches.Add((Snes(0x6C93B), new[] { (byte) Item.RandomBottle(rnd) }));
         }
 
         IEnumerable<(int, byte[])> EnemyPrizePackDistribution() {
@@ -617,6 +621,7 @@ namespace Randomizer.SMZ3 {
                 _ => "C",
             };
             var smGlitch = myWorld.Config.SMLogic switch {
+                SMLogic.Easy => "E",
                 SMLogic.Normal => "N",
                 SMLogic.Hard => "H",
                 _ => "X",
