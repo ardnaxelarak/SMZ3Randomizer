@@ -9,7 +9,7 @@ namespace Randomizer.SMZ3 {
 
     public class Randomizer : IRandomizer {
 
-        public static readonly Version version = new Version(11, 2);
+        public static readonly Version version = new Version(11, 3);
 
         public string Id => "smz3";
         public string Name => "Super Metroid & A Link to the Past Combo Randomizer";
@@ -62,16 +62,15 @@ namespace Randomizer.SMZ3 {
             var filler = new Filler(worlds, config, randoRnd, cancellationToken);
             filler.Fill();
 
-            var playthrough = new Playthrough(worlds, config);
-            var spheres = playthrough.Generate();
-
             var seedData = new SeedData {
                 Guid = new HexGuid(),
                 Seed = seed,
                 Game = Name,
                 Mode = config.GameMode.ToLowerString(),
                 Logic = $"{config.SMLogic.ToLowerString()}+{config.Z3Logic.ToLowerString()}",
-                Playthrough = config.Race ? new List<Dictionary<string, string>>() : spheres,
+                Playthrough = config.Race
+                    ? new List<Dictionary<string, string>>()
+                    : Playthrough.Generate(worlds, config),
                 Worlds = new List<IWorldData>(),
             };
 
@@ -85,9 +84,12 @@ namespace Randomizer.SMZ3 {
                     Guid = world.Guid,
                     Player = world.Player,
                     Patches = patch.Create(config),
-                    Locations = world.Locations
-                        .Select(l => new LocationData() { LocationId = l.Id, ItemId = (int)l.Item.Type, ItemWorldId = l.Item.World.Id })
-                        .ToList<ILocationData>(),
+                    Locations = world.Locations.Select(l => new LocationData() {
+                        LocationId = l.Id,
+                        ItemId = (int)l.Item.Type,
+                        ItemWorldId = l.Item.World.Id
+                    }).ToList<ILocationData>(),
+                    WorldState = world.WorldState,
                 };
 
                 seedData.Worlds.Add(worldData);
@@ -144,6 +146,7 @@ namespace Randomizer.SMZ3 {
         public string Player { get; set; }
         public Dictionary<int, byte[]> Patches { get; set; }
         public List<ILocationData> Locations { get; set; }
+        public object WorldState { get; set; }
     }
 
     public class LocationData : ILocationData {

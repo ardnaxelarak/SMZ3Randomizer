@@ -1,8 +1,8 @@
-﻿using Microsoft.EntityFrameworkCore.Metadata.Conventions;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using static Randomizer.SMZ3.RewardType;
+using static Randomizer.SMZ3.WorldState;
 
 namespace Randomizer.SMZ3 {
 
@@ -14,11 +14,19 @@ namespace Randomizer.SMZ3 {
         public string Player { get; set; }
         public string Guid { get; set; }
         public int Id { get; set; }
+        public WorldState WorldState { get; set; }
+
+        public int TowerCrystals => WorldState?.TowerCrystals ?? 7;
+        public int GanonCrystals => WorldState?.GanonCrystals ?? 7;
+        public int TourianBossTokens => WorldState?.TourianBossTokens ?? 4;
 
         public IEnumerable<Item> Items {
             get { return Locations.Select(l => l.Item).Where(i => i != null); }
         }
 
+        public bool ForwardSearch { get; set; } = false;
+
+        private Dictionary<int, IReward[]> rewardLookup { get; set; }
         private Dictionary<string, Location> locationLookup { get; set; }
         private Dictionary<string, Region> regionLookup { get; set; }
 
@@ -56,14 +64,15 @@ namespace Randomizer.SMZ3 {
                 new Regions.Zelda.DarkWorld.NorthEast(this, Config),
                 new Regions.Zelda.DarkWorld.South(this, Config),
                 new Regions.Zelda.DarkWorld.Mire(this, Config),
-                new Regions.SuperMetroid.Crateria.Central(this, Config),
                 new Regions.SuperMetroid.Crateria.West(this, Config),
+                new Regions.SuperMetroid.Crateria.Central(this, Config),
                 new Regions.SuperMetroid.Crateria.East(this, Config),
                 new Regions.SuperMetroid.Brinstar.Blue(this, Config),
                 new Regions.SuperMetroid.Brinstar.Green(this, Config),
-                new Regions.SuperMetroid.Brinstar.Kraid(this, Config),
                 new Regions.SuperMetroid.Brinstar.Pink(this, Config),
                 new Regions.SuperMetroid.Brinstar.Red(this, Config),
+                new Regions.SuperMetroid.Brinstar.Kraid(this, Config),
+                new Regions.SuperMetroid.WreckedShip(this, Config),
                 new Regions.SuperMetroid.Maridia.Outer(this, Config),
                 new Regions.SuperMetroid.Maridia.Inner(this, Config),
                 new Regions.SuperMetroid.NorfairUpper.West(this, Config),
@@ -71,7 +80,6 @@ namespace Randomizer.SMZ3 {
                 new Regions.SuperMetroid.NorfairUpper.Crocomire(this, Config),
                 new Regions.SuperMetroid.NorfairLower.West(this, Config),
                 new Regions.SuperMetroid.NorfairLower.East(this, Config),
-                new Regions.SuperMetroid.WreckedShip(this, Config)
             };
 
             Locations = Regions.SelectMany(x => x.Locations).ToList();
@@ -91,37 +99,44 @@ namespace Randomizer.SMZ3 {
             return region.CanEnter(items);
         }
 
-        public bool CanAquire(Progression items, RewardType reward) {
-            // For the purpose of logic unit tests, if no region has the reward then CanAquire is satisfied
+        public bool CanAcquire(Progression items, RewardType reward) {
+            // For the purpose of logic unit tests, if no region has the reward then CanAcquire is satisfied
             return Regions.OfType<IReward>().FirstOrDefault(x => reward == x.Reward)?.CanComplete(items) ?? true;
         }
 
-        public bool CanAquireAll(Progression items, params RewardType[] rewards) {
-            return Regions.OfType<IReward>().Where(x => rewards.Contains(x.Reward)).All(x => x.CanComplete(items));
+        public bool CanAcquireAll(Progression items, RewardType rewardsMask) {
+            return rewardLookup[(int)rewardsMask].All(x => x.CanComplete(items));
         }
 
-        public void Setup(Random rnd) {
-            SetMedallions(rnd);
-            SetRewards(rnd);
+        public bool CanAcquireAtLeast(int amount, Progression items, RewardType rewardsMask) {
+            return rewardLookup[(int)rewardsMask].Where(x => x.CanComplete(items)).Count() >= amount;
         }
 
-        private void SetMedallions(Random rnd) {
-            foreach (var region in Regions.OfType<IMedallionAccess>()) {
-                region.Medallion = rnd.Next(3) switch {
-                    0 => ItemType.Bombos,
-                    1 => ItemType.Ether,
-                    _ => ItemType.Quake,
-                };
+        public void Setup(WorldState state) {
+            WorldState = state;
+            SetRewards(state.Rewards);
+            SetMedallions(state.Medallions);
+            SetRewardLookup();
+        }
+
+        void SetRewards(IEnumerable<RewardType> rewards) {
+            var regions = Regions.OfType<IReward>().Where(x => x.Reward == None);
+            foreach (var (region, reward) in regions.Zip(rewards)) {
+                region.Reward = reward;
             }
         }
 
-        private void SetRewards(Random rnd) {
-            var rewards = new[] {
-                PendantGreen, PendantNonGreen, PendantNonGreen, CrystalRed, CrystalRed,
-                CrystalBlue, CrystalBlue, CrystalBlue, CrystalBlue, CrystalBlue }.Shuffle(rnd);
-            foreach (var region in Regions.OfType<IReward>().Where(x => x.Reward == None)) {
-                region.Reward = rewards.First();
-                rewards.Remove(region.Reward);
+        void SetMedallions(IEnumerable<Medallion> medallions) {
+            var (mm, tr, _) = medallions;
+            (GetRegion("Misery Mire") as IMedallionAccess).Medallion = mm;
+            (GetRegion("Turtle Rock") as IMedallionAccess).Medallion = tr;
+        }
+
+        void SetRewardLookup() {
+            /* Generate a lookup of all possible regions for any given reward combination for faster lookup later */
+            rewardLookup = new Dictionary<int, IReward[]>();
+            for (var i = 0; i < 512; i += 1) {
+                rewardLookup.Add(i, Regions.OfType<IReward>().Where(x => (((int)x.Reward) & i) != 0).ToArray());
             }
         }
 

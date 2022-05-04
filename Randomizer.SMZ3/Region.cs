@@ -1,24 +1,38 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using static Randomizer.SMZ3.WorldState;
 
 namespace Randomizer.SMZ3 {
 
+    [Flags]
     enum RewardType {
         [Description("None")]
         None,
         [Description("Agahnim")]
-        Agahnim,
+        Agahnim = 1 << 0,
         [Description("Green Pendant")]
-        PendantGreen,
+        PendantGreen = 1 << 1,
         [Description("Blue/Red Pendant")]
-        PendantNonGreen,
+        PendantNonGreen = 1 << 2,
         [Description("Blue Crystal")]
-        CrystalBlue,
+        CrystalBlue = 1 << 3,
         [Description("Red Crystal")]
-        CrystalRed,
-        [Description("Golden Four Boss")]
-        GoldenFourBoss
+        CrystalRed = 1 << 4,
+        [Description("Kraid Boss Token")]
+        BossTokenKraid = 1 << 5,
+        [Description("Phantoon Boss Token")]
+        BossTokenPhantoon = 1 << 6,
+        [Description("Draygon Boss Token")]
+        BossTokenDraygon = 1 << 7,
+        [Description("Ridley Boss Token")]
+        BossTokenRidley = 1 << 8,
+
+        AnyPendant = PendantGreen | PendantNonGreen,
+        AnyCrystal = CrystalBlue | CrystalRed,
+        AnyBossToken = BossTokenKraid | BossTokenPhantoon
+            | BossTokenDraygon | BossTokenRidley,
     }
 
     interface IReward {
@@ -27,7 +41,7 @@ namespace Randomizer.SMZ3 {
     }
 
     interface IMedallionAccess {
-        ItemType Medallion { get; set; }
+        Medallion Medallion { get; set; }
     }
 
     abstract class SMRegion : Region {

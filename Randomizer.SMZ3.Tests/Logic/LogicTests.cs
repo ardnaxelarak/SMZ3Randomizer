@@ -2,10 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
-using Randomizer.SMZ3.Regions.Zelda;
 using static System.Linq.Enumerable;
 using static Randomizer.SMZ3.ItemType;
 using static Randomizer.SMZ3.RewardType;
+using static Randomizer.SMZ3.WorldState;
 using static Randomizer.SMZ3.Tests.Logic.LogicCases;
 
 namespace Randomizer.SMZ3.Tests.Logic {
@@ -20,12 +20,14 @@ namespace Randomizer.SMZ3.Tests.Logic {
                 KeyShuffle = keysanity ? KeyShuffle.Keysanity : KeyShuffle.None,
             };
             world = new World(config, "", 0, "");
-            (world.Regions.Single(x => x.Name == "Misery Mire") as MiseryMire).Medallion = Ether;
-            (world.Regions.Single(x => x.Name == "Turtle Rock") as TurtleRock).Medallion = Quake;
             /* Here we use the assumptions that single/multiple reward checks yield true if the rewards are missing */
-            foreach (var region in world.Regions.OfType<IReward>()) {
-                region.Reward = region.Reward == Agahnim ? Agahnim : None;
-            }
+            world.Setup(new WorldState {
+                Rewards = Repeat(None, 7 + 4),
+                Medallions = new[] { Medallion.Ether, Medallion.Quake },
+                GanonCrystals = 0,
+                TowerCrystals = 0,
+                TourianBossTokens = 0,
+            });
         }
 
         [TestFixture]

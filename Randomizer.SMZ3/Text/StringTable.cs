@@ -43,6 +43,8 @@ namespace Randomizer.SMZ3.Text {
 
         public void SetGanonThirdPhaseText(string text) {
             SetText("ganon_phase_3", text);
+            SetText("ganon_phase_3_no_silvers", text);
+            SetText("ganon_phase_3_no_silvers_alt", text);
         }
 
         public void SetTriforceRoomText(string text) {
@@ -59,6 +61,14 @@ namespace Randomizer.SMZ3.Text {
 
         public void SetBombosText(string text) {
             SetText("tablet_bombos_book", text);
+        }
+
+        public void SetTowerRequirementText(string text) {
+            SetText("sign_ganons_tower", text);
+        }
+
+        public void SetGanonRequirementText(string text) {
+            SetText("sign_ganon", text);
         }
 
         void SetText(string name, string text) {

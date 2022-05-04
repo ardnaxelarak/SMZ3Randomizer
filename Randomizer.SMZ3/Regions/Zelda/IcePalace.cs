@@ -11,6 +11,7 @@ namespace Randomizer.SMZ3.Regions.Zelda {
         public RewardType Reward { get; set; } = RewardType.None;
 
         public IcePalace(World world, Config config) : base(world, config) {
+            Weight = 4;
             RegionItems = new[] { KeyIP, BigKeyIP, MapIP, CompassIP };
 
             Locations = new List<Location> {
@@ -45,7 +46,7 @@ namespace Randomizer.SMZ3.Regions.Zelda {
         }
 
         bool CanNotWasteKeysBeforeAccessible(Progression items, IList<Location> locations) {
-            return !items.BigKeyIP || locations.Any(l => l.ItemIs(BigKeyIP, World));
+            return World.ForwardSearch || !items.BigKeyIP || locations.Any(l => l.ItemIs(BigKeyIP, World));
         }
 
         public override bool CanEnter(Progression items) {

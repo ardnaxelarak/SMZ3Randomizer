@@ -249,6 +249,15 @@ namespace Randomizer.SMZ3 {
         [Description("Lower Norfair Boss Keycard")]
         CardLowerNorfairBoss = 0xDF,
 
+        [Description("Brinstar Map")]
+        SmMapBrinstar = 0xCA,
+        [Description("Wrecked Ship Map")]
+        SmMapWreckedShip = 0xCB,
+        [Description("Maridia Map")]
+        SmMapMaridia = 0xCC,
+        [Description("Lower Norfair Map")]
+        SmMapLowerNorfair = 0xCD,
+
         [Description("Missile")]
         Missile = 0xC2,
         [Description("Super Missile")]
@@ -327,6 +336,7 @@ namespace Randomizer.SMZ3 {
         static readonly Regex map = new("^Map");
         static readonly Regex compass = new("^Compass");
         static readonly Regex keycard = new("^Card");
+        static readonly Regex smMap = new("^SmMap");
 
         private static readonly List<ItemType> BottleTypes = new List<ItemType> {
             Bottle,
@@ -344,6 +354,7 @@ namespace Randomizer.SMZ3 {
         public bool IsMap => map.IsMatch(Type.ToString());
         public bool IsCompass => compass.IsMatch(Type.ToString());
         public bool IsKeycard => keycard.IsMatch(Type.ToString());
+        public bool IsSmMap => smMap.IsMatch(Type.ToString());
 
         public bool Is(ItemType type, World world) => Type == type && World == world;
         public bool IsNot(ItemType type, World world) => !Is(type, world);
@@ -476,7 +487,7 @@ namespace Randomizer.SMZ3 {
             itemPool.AddRange(Copies(4,  () => new Item(BombUpgrade5)));
             itemPool.AddRange(Copies(2,  () => new Item(OneRupee)));
             itemPool.AddRange(Copies(4,  () => new Item(FiveRupees)));
-            itemPool.AddRange(Copies(world.Config.Keysanity ? 25 : 28, () => new Item(TwentyRupees)));
+            itemPool.AddRange(Copies(world.Config.Keysanity ? 21 : 28, () => new Item(TwentyRupees)));
             itemPool.AddRange(Copies(7,  () => new Item(FiftyRupees)));
             itemPool.AddRange(Copies(5,  () => new Item(ThreeHundredRupees)));
 
@@ -574,6 +585,15 @@ namespace Randomizer.SMZ3 {
                 new Item(CardWreckedShipBoss, world),
                 new Item(CardLowerNorfairL1, world),
                 new Item(CardLowerNorfairBoss, world),
+            };
+        }
+
+        public static List<Item> CreateSmMaps(World world) {
+            return new List<Item> {
+                new Item(SmMapBrinstar, world),
+                new Item(SmMapWreckedShip, world),
+                new Item(SmMapMaridia, world),
+                new Item(SmMapLowerNorfair, world),
             };
         }
 
@@ -913,11 +933,11 @@ namespace Randomizer.SMZ3 {
                 Hard =>
                     items.MoonPearl && items.Flippers &&
                     (items.CanSpringBallJump() || items.HiJump || items.Gravity) && items.Morph &&
-                    (world.CanAquire(items, Agahnim) || items.Hammer && items.CanLiftLight() || items.CanLiftHeavy()),
+                    (world.CanAcquire(items, Agahnim) || items.Hammer && items.CanLiftLight() || items.CanLiftHeavy()),
                 _ =>
                     items.MoonPearl && items.Flippers &&
                     items.Gravity && items.Morph &&
-                    (world.CanAquire(items, Agahnim) || items.Hammer && items.CanLiftLight() || items.CanLiftHeavy())
+                    (world.CanAcquire(items, Agahnim) || items.Hammer && items.CanLiftLight() || items.CanLiftHeavy())
             };
         }
 

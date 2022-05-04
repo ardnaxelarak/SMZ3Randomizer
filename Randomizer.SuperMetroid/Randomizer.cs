@@ -9,7 +9,7 @@ namespace Randomizer.SuperMetroid {
 
     public class Randomizer : IRandomizer {
 
-        public static readonly Version version = new Version(3, 0);
+        public static readonly Version version = new Version(3, 1);
 
         public string Id => "sm";
         public string Name => "Super Metroid Item Randomizer";
@@ -61,16 +61,15 @@ namespace Randomizer.SuperMetroid {
             var filler = new Filler(worlds, config, rnd, cancellationToken);
             filler.Fill();
 
-            var playthrough = new Playthrough(worlds, config);
-            var spheres = playthrough.Generate();
-
             var seedData = new SeedData {
                 Guid = new HexGuid(),
                 Seed = seed,
                 Game = Name,
                 Mode = config.GameMode.ToLowerString(),
                 Logic = config.Logic.ToLowerString(),
-                Playthrough = config.Race ? new List<Dictionary<string, string>>() : spheres,
+                Playthrough = config.Race
+                    ? new List<Dictionary<string, string>>()
+                    : Playthrough.Generate(worlds, config),
                 Worlds = new List<IWorldData>(),
             };
 
@@ -137,12 +136,12 @@ namespace Randomizer.SuperMetroid {
     }
 
     public class WorldData : IWorldData {
-
         public int Id { get; set; }
         public string Guid { get; set; }
         public string Player { get; set; }
         public Dictionary<int, byte[]> Patches { get; set; }
         public List<ILocationData> Locations { get; set; }
+        public object WorldState { get; } = null;
     }
 
     public class LocationData : ILocationData {

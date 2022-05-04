@@ -25,7 +25,7 @@ jobs:
     - name: Build and push webrandomizer-service Docker image
       uses: docker/build-push-action@v1.1.0
       with:
-        dockerfile: WebGameService/Dockerfile
+        dockerfile: Randomizer.Service/Dockerfile
         username: ${{ secrets.DOCKER_USERNAME }}
         password: ${{ secrets.DOCKER_PASSWORD }}
         repository: tewtal/webrandomizer-service
@@ -36,4 +36,4 @@ jobs:
       env:
         KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
       with:
-        args: rollout restart deployments/webrandomizer-deployment
+        args: rollout restart deployments/webrandomizer-beta-deployment
