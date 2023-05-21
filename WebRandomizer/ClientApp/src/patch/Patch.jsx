@@ -49,18 +49,25 @@ const SpriteOption = styled.div`
 /* through bootstrap "$input-btn-padding-x" */
 const inputPaddingX = '.75rem';
 
-const Z3Sprite = styled.option`
+const Z3SpriteStyle = styled.option`
     width: 16px;
     height: 24px;
     margin-right: ${inputPaddingX};
     background-size: auto 24px;
-    background-position: -${props => props.index * 16}px 0;
-    background-image: url(${process.env.PUBLIC_URL}/sprites/z3.png);
+    background-image: url(${process.env.PUBLIC_URL}/sprites/z3.png?version=131);
 `;
 
-const SMSprite = styled(Z3Sprite)`
-    background-image: url(${process.env.PUBLIC_URL}/sprites/sm.png);
+const Z3Sprite = ({ index }) => {
+    return <Z3SpriteStyle style={{backgroundPosition: `-${(index * 16)}px 0`}} />
+}
+
+const SMSpriteStyle = styled(Z3SpriteStyle)`
+    background-image: url(${process.env.PUBLIC_URL}/sprites/sm.png?version=131);
 `;
+
+const SMSprite = ({ index }) => {
+    return <SMSpriteStyle style={{ backgroundPosition: `-${(index * 16)}px 0` }} />
+}
 
 const JumpSprite = styled.span`
     width: 17px;
@@ -121,7 +128,7 @@ export default function Patch(props) {
             if (world !== null) {
                 const settings = { worldSettings, z3Sprite, smSprite, smSpinjumps, smInfiniteSpaceJump, z3QuickSwap, z3HeartColor, z3HeartBeep, smEnergyBeep };
                 const patchedData = await prepareRom(world.patch, settings, baseIps(game.id, seed.gameVersion), game);
-                saveAs(new Blob([patchedData]), constructFileName());
+                saveAs(new Blob([patchedData], { type: "application/octet-stream" }), constructFileName());
             }
         } catch (error) {
             console.log(error);
@@ -271,7 +278,7 @@ export default function Patch(props) {
                 </Row>
             )}
             <Row className="mb-3">
-                {game.z3 && worldSettings.race === "false" && <Col md="3">
+                {game.z3 && <Col md="3">
                     <InputGroup prefixClassName="mr-1" prefix="Quick Swap">
                         <BootstrapSwitchButton width="60" onlabel="On" offlabel="Off" checked={z3QuickSwap}
                             onChange={onZ3QuickSwapToggle}
