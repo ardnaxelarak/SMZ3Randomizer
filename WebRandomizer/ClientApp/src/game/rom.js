@@ -34,6 +34,11 @@ export async function prepareRom(worldPatch, settings, baseIps, game) {
     const { mapping } = game;
     applyIps(rom, basePatch);
 
+    for (const ips of settings.patches) {
+        const patch = maybeCompressed(new Uint8Array(await (await fetch(ips, { cache: 'no-store' })).arrayBuffer()));
+        applyIps(rom, patch);
+    }
+
     if (game.z3) {
         await applySprite(rom, mapping, 'link_sprite', settings.z3Sprite);
     }

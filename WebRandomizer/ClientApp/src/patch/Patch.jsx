@@ -33,6 +33,8 @@ import inventory from '../resources/sprite/inventory';
 import baseIpsSMZ3v11_2 from '../resources/zsm.v11.2.ips.gz';
 import baseIpsSMZ3 from '../resources/zsm.ips.gz';
 import baseIpsSM from '../resources/sm.ips.gz';
+import respinSMZ3 from '../resources/zsm_spin_jump_restart.ips.gz';
+import saveRefillSMZ3 from '../resources/zsm_refill_before_save.ips.gz';
 
 const baseIps = (gameId, gameVersion) => {
     return gameId === "sm"
@@ -82,6 +84,8 @@ export default function Patch(props) {
     const [smSprite, setSMSprite] = useState({});
     const [smSpinjumps, setSMSpinjumps] = useState(false);
     const [smInfiniteSpaceJump, setSMInfiniteSpaceJump] = useState(false);
+    const [smRespin, setSMRespin] = useState(false);
+    const [smSaveRefill, setSMSaveRefill] = useState(false);
     const [z3QuickSwap, setZ3QuickSwap] = useState(false);
     const [z3HeartColor, setZ3HeartColor] = useState('red');
     const [z3HeartBeep, setZ3HeartBeep] = useState('half');
@@ -111,11 +115,13 @@ export default function Patch(props) {
         let settings;
         if ((settings = restore())) {
             const { z3: z3Sprite, sm: smSprite, spinjumps } = settings.sprites || {};
-            const { z3_quick_swap, z3_heart_color, z3_heart_beep, sm_energy_beep, sm_infinite_space_jump } = settings;
+            const { z3_quick_swap, z3_heart_color, z3_heart_beep, sm_energy_beep, sm_infinite_space_jump, sm_respin, sm_save_refill } = settings;
             setZ3Sprite(sprites.z3.find(x => x.title === z3Sprite) || {});
             setSMSprite(sprites.sm.find(x => x.title === smSprite) || {});
             setSMSpinjumps(defaultTo(spinjumps, false));
             setSMInfiniteSpaceJump(defaultTo(sm_infinite_space_jump, false));
+            setSMRespin(defaultTo(sm_respin, false));
+            setSMSaveRefill(defaultTo(sm_save_refill, false));
             setZ3QuickSwap(defaultTo(z3_quick_swap, false));
             setZ3HeartColor(defaultTo(z3_heart_color, 'red'));
             setZ3HeartBeep(defaultTo(z3_heart_beep, 'half'));
@@ -126,7 +132,14 @@ export default function Patch(props) {
     async function onDownloadRom() {
         try {
             if (world !== null) {
-                const settings = { worldSettings, z3Sprite, smSprite, smSpinjumps, smInfiniteSpaceJump, z3QuickSwap, z3HeartColor, z3HeartBeep, smEnergyBeep };
+                const patches = [];
+                if (smRespin) {
+                    patches.push(respinSMZ3);
+                }
+                if (smSaveRefill) {
+                    patches.push(saveRefillSMZ3)
+                }
+                const settings = { worldSettings, z3Sprite, smSprite, smSpinjumps, smInfiniteSpaceJump, z3QuickSwap, z3HeartColor, z3HeartBeep, smEnergyBeep, patches };
                 const patchedData = await prepareRom(world.patch, settings, baseIps(game.id, seed.gameVersion), game);
                 saveAs(new Blob([patchedData], { type: "application/octet-stream" }), constructFileName());
             }
@@ -215,6 +228,14 @@ export default function Patch(props) {
         setSMInfiniteSpaceJump(!smInfiniteSpaceJump);
         persist(set(restore() || {}, 'sm_infinite_space_jump', !smInfiniteSpaceJump));
     };
+    const onSMRespinToggle = () => {
+        setSMRespin(!smRespin);
+        persist(set(restore() || {}, 'sm_respin', !smRespin));
+    };
+    const onSMSaveRefillToggle = () => {
+        setSMSaveRefill(!smSaveRefill);
+        persist(set(restore() || {}, 'sm_save_refill', !smSaveRefill));
+    };
     const onZ3QuickSwapToggle = () => {
         setZ3QuickSwap(!z3QuickSwap);
         persist(set(restore() || {}, 'z3_quick_swap', !z3QuickSwap));
@@ -254,7 +275,7 @@ export default function Patch(props) {
             </Row>
             {game.z3 && (
                 <Row className="mb-3">
-                    <Col md="5">
+                    <Col md="4">
                         <InputGroup prefix="Heart Beep">
                             <Input type="select" value={z3HeartBeep} onChange={(e) => onZ3HeartBeepChange(e.target.value)}>
                                 <option value="off">Off</option>
@@ -275,16 +296,16 @@ export default function Patch(props) {
                             </Input>
                         </InputGroup>
                     </Col>
+                    {game.z3 && <Col md="3">
+                        <InputGroup prefixClassName="mr-1" prefix="Quick Swap">
+                            <BootstrapSwitchButton width="60" onlabel="On" offlabel="Off" checked={z3QuickSwap}
+                                onChange={onZ3QuickSwapToggle}
+                            />
+                        </InputGroup>
+                    </Col>}
                 </Row>
             )}
             <Row className="mb-3">
-                {game.z3 && <Col md="3">
-                    <InputGroup prefixClassName="mr-1" prefix="Quick Swap">
-                        <BootstrapSwitchButton width="60" onlabel="On" offlabel="Off" checked={z3QuickSwap}
-                            onChange={onZ3QuickSwapToggle}
-                        />
-                    </InputGroup>
-                </Col>}
                 <Col md="3">
                     <InputGroup prefixClassName="mr-1" prefix="Energy Beep">
                         <BootstrapSwitchButton width="60" onlabel="On" offlabel="Off" checked={smEnergyBeep}
@@ -296,6 +317,20 @@ export default function Patch(props) {
                     <InputGroup prefixClassName="mr-1" prefix="Infinite Space Jump">
                         <BootstrapSwitchButton width="60" onlabel="On" offlabel="Off" checked={smInfiniteSpaceJump}
                             onChange={onSMInfiniteSpaceJumpToggle}
+                        />
+                    </InputGroup>
+                </Col>
+                <Col md="2">
+                    <InputGroup prefixClassName="mr-1" prefix="Respin">
+                        <BootstrapSwitchButton width="60" onlabel="On" offlabel="Off" checked={smRespin}
+                            onChange={onSMRespinToggle}
+                        />
+                    </InputGroup>
+                </Col>
+                <Col md="3">
+                    <InputGroup prefixClassName="mr-1" prefix="Refill On Save">
+                        <BootstrapSwitchButton width="60" onlabel="On" offlabel="Off" checked={smSaveRefill}
+                            onChange={onSMSaveRefillToggle}
                         />
                     </InputGroup>
                 </Col>
