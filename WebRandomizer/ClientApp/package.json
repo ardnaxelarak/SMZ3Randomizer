@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@babel/runtime": "^7.22.10",
     "@craco/craco": "7.1.0",
     "bootstrap": "^4.4.1",
     "bootstrap-switch-button-react": "^1.2.0",

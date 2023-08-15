@@ -254,7 +254,7 @@ export default function Patch(props) {
             </Row>
             {game.z3 && (
                 <Row className="mb-3">
-                    <Col md="5">
+                    <Col md="4">
                         <InputGroup prefix="Heart Beep">
                             <Input type="select" value={z3HeartBeep} onChange={(e) => onZ3HeartBeepChange(e.target.value)}>
                                 <option value="off">Off</option>
@@ -275,26 +275,26 @@ export default function Patch(props) {
                             </Input>
                         </InputGroup>
                     </Col>
+                    <Col md="4">
+                        <InputGroup prefixClassName="mr-1" prefix="Quick Swap">
+                            <BootstrapSwitchButton width="70" onlabel="On" offlabel="Off" checked={z3QuickSwap}
+                                onChange={onZ3QuickSwapToggle}
+                            />
+                        </InputGroup>
+                    </Col>
                 </Row>
             )}
             <Row className="mb-3">
-                {game.z3 && <Col md="3">
-                    <InputGroup prefixClassName="mr-1" prefix="Quick Swap">
-                        <BootstrapSwitchButton width="60" onlabel="On" offlabel="Off" checked={z3QuickSwap}
-                            onChange={onZ3QuickSwapToggle}
-                        />
-                    </InputGroup>
-                </Col>}
-                <Col md="3">
+                <Col md="4">
                     <InputGroup prefixClassName="mr-1" prefix="Energy Beep">
-                        <BootstrapSwitchButton width="60" onlabel="On" offlabel="Off" checked={smEnergyBeep}
+                        <BootstrapSwitchButton width="70" onlabel="On" offlabel="Off" checked={smEnergyBeep}
                             onChange={onSMEnergyBeepToggle}
                         />
                     </InputGroup>
                 </Col>
                 <Col md="4">
                     <InputGroup prefixClassName="mr-1" prefix="Infinite Space Jump">
-                        <BootstrapSwitchButton width="60" onlabel="On" offlabel="Off" checked={smInfiniteSpaceJump}
+                        <BootstrapSwitchButton width="70" onlabel="On" offlabel="Off" checked={smInfiniteSpaceJump}
                             onChange={onSMInfiniteSpaceJumpToggle}
                         />
                     </InputGroup>
